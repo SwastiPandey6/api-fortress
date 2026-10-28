@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API Fortress: run everything",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_local.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Gateway only (debug)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--port", "8000"],
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true
+    },
+    {
+      "name": "Demo API only (debug)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["demo_api.main:app", "--port", "9000"],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Attack simulation (CLI)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/simulate_attacks.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}"
+    }
+  ],
+  "compounds": [
+    { "name": "Gateway + Demo API (debug both)", "configurations": ["Demo API only (debug)", "Gateway only (debug)"] }
+  ]
+}

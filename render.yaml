@@ -1,0 +1,31 @@
+# Render Blueprint: New > Blueprint > select this repository.
+services:
+  - type: web
+    name: api-fortress
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /gateway/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: TRUST_PROXY_HEADERS
+        value: "true"
+      - key: GATEWAY_MODE
+        value: enforce
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false          # you are prompted for it on first deploy (12+ characters)
+      - key: ADMIN_SESSION_SECRET
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GATEWAY_SHARED_SECRET
+        generateValue: true
+      - key: INGEST_TOKEN
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false          # optional: Postgres URL for persistent storage

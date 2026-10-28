@@ -1,0 +1,10 @@
+# Automatic HTTPS via Let's Encrypt. Set DOMAIN in .env (e.g. fortress.example.com)
+# and point the domain's DNS A record at this server before starting.
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy gateway:8000
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+}

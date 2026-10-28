@@ -1,0 +1,8 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Run API Fortress", "type": "shell", "command": "${command:python.interpreterPath} run_local.py", "problemMatcher": [], "group": "build" },
+    { "label": "Run tests", "type": "shell", "command": "${command:python.interpreterPath} -m pytest -v", "group": "test" },
+    { "label": "Simulate attacks", "type": "shell", "command": "${command:python.interpreterPath} scripts/simulate_attacks.py" }
+  ]
+}

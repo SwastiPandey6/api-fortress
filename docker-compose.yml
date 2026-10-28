@@ -1,0 +1,67 @@
+# Split deployment for a VPS:
+#   gateway  - the only service reachable from outside (port 8000, or 80/443 via Caddy)
+#   backend  - protected demo API on a private network with no published ports
+#   caddy    - optional HTTPS reverse proxy (docker compose --profile https up -d)
+#
+# Usage:  cp .env.example .env   (edit secrets)   then   docker compose up -d --build
+
+services:
+  backend:
+    build: .
+    command: ["python", "-m", "uvicorn", "demo_api.main:app", "--host", "0.0.0.0", "--port", "9000"]
+    env_file: .env
+    environment:
+      DEMO_DB_PATH: /app/data/demo_api.db
+    volumes:
+      - backend-data:/app/data
+    networks: [internal]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:9000/health',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  gateway:
+    build: .
+    command: ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*", "--workers", "1"]
+    env_file: .env
+    environment:
+      BACKEND_URL: http://backend:9000
+      GATEWAY_SELF_URL: http://127.0.0.1:8000
+    ports:
+      - "${GATEWAY_PORT:-8000}:8000"
+    volumes:
+      - gateway-data:/app/data
+    networks: [internal, public]
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.8-alpine
+    profiles: ["https"]
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [public]
+    depends_on: [gateway]
+    restart: unless-stopped
+
+networks:
+  internal:
+    internal: true
+  public: {}
+
+volumes:
+  backend-data:
+  gateway-data:
+  caddy-data:
+  caddy-config:
